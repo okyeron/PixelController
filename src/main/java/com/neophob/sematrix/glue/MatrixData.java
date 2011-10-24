@@ -20,8 +20,6 @@
 package com.neophob.sematrix.glue;
 
 import java.security.InvalidParameterException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +28,6 @@ import processing.core.PImage;
 
 import com.neophob.sematrix.fader.Fader;
 import com.neophob.sematrix.layout.LayoutModel;
-import com.neophob.sematrix.output.Output;
 import com.neophob.sematrix.resize.Resize;
 import com.neophob.sematrix.resize.Resize.ResizeName;
 
@@ -61,7 +58,8 @@ public class MatrixData {
 	private int deviceSize;
 	
 	/** This map is used to store temporary images */
-	private Map<Output, PImage> pImagesMap;
+	private PImage tmpImage;
+	
 	
 	/**
 	 * init matrix data.
@@ -77,8 +75,6 @@ public class MatrixData {
 		this.deviceYSize = deviceYSize;
 		this.deviceSize = deviceXSize*deviceYSize;
 		
-		this.pImagesMap = new HashMap<Output, PImage>();
-
 		LOG.log(Level.INFO, "screenSize: {0} ({1} * {2}), "
 				, new Object[] { deviceSize, deviceXSize, deviceYSize });
 		
@@ -138,7 +134,7 @@ public class MatrixData {
 	 * @param output the output
 	 * @return the screen buffer for device
 	 */
-	public int[] getScreenBufferForDevice(Visual visual, LayoutModel lm, OutputMapping map, Output output) {
+	public int[] getScreenBufferForDevice(Visual visual, LayoutModel lm, OutputMapping map) {
 		int[] buffer = visual.getBuffer();
 		
 		//apply output specific effect
@@ -152,15 +148,10 @@ public class MatrixData {
 		int yStart=lm.getyStart(getBufferYSize());
 		int yWidth=lm.getyWidth(getBufferYSize());
 		
-		// initialize PImage instance in a lazy way and store a dedicated
-		// instance per output in an internal map to avoid constructing an
-		// PImage instance with every method call.
-		PImage tmpImage = this.pImagesMap.get(output);
+		//lazy creation of the pimage
 		if (tmpImage==null || tmpImage.width != getBufferXSize()) {
-			tmpImage = Collector.getInstance().getPapplet().createImage(getBufferXSize(), getBufferYSize(), PApplet.RGB);
-			this.pImagesMap.put(output, tmpImage);
+			tmpImage = Collector.getInstance().getPapplet().createImage( getBufferXSize(), getBufferYSize(), PApplet.RGB );			
 		} 
-		
 		tmpImage.loadPixels();
 		System.arraycopy(buffer, 0, tmpImage.pixels, 0, getBufferXSize()*getBufferYSize());
 

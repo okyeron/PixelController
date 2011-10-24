@@ -57,16 +57,6 @@ public abstract class Output {
 	/** bit per pixel. */
 	protected int bpp;
 	
-	private int totalNrOfOutputBuffers;
-	private int switchBuffer;
-	
-	/** 
-	 * this map contains twice as muchen entries as outputs exists
-	 * for each output device two buffers exists, one to display and
-	 * one to work with 
-	 */
-	private Map<Integer, int[]> bufferMap;
-
 	/**
 	 * Instantiates a new output.
 	 *
@@ -82,10 +72,6 @@ public abstract class Output {
 		this.matrixData = this.collector.getMatrix();
 		this.layout = ph.getLayout();
 		this.bpp = bpp;
-		
-		this.bufferMap = new HashMap<Integer, int[]>();		
-		this.totalNrOfOutputBuffers = this.collector.getNrOfScreens();
-		this.switchBuffer=0;
 		
 		//add to list
 		controller.addOutput(this);
@@ -111,43 +97,19 @@ public abstract class Output {
 	 * @return the buffer for screen
 	 */
 	public int[] getBufferForScreen(int screenNr) {
-		return this.bufferMap.get(switchBuffer+screenNr);
-	}
-	
-
-	/**
-	 * fill the the preparedBufferMap instance with int[] buffers for all screens.
-	 */
-	public void prepareOutputBuffer() {
-		int[] buffer;
-		Visual v;
+		LayoutModel lm = layout.getDataForScreen(screenNr);
+		OutputMapping map = this.collector.getOutputMappings(screenNr);
 		
-		for (int screen = 0; screen < this.collector.getNrOfScreens(); screen++) {
-			LayoutModel lm = this.layout.getDataForScreen(screen);
-			OutputMapping map = this.collector.getOutputMappings(screen);
-			
-			if (lm.screenDoesNotNeedStretching()) {
-				v = this.collector.getVisual(lm.getFxInput());
-				buffer = this.matrixData.getScreenBufferForDevice(v, map);
-			} else {
-				v = this.collector.getVisual(lm.getFxInput());
-				buffer = this.matrixData.getScreenBufferForDevice(v, lm, map, this);
-			}
-			
-			this.bufferMap.put(screen+switchBuffer, buffer);
-		}				
+		if (lm.screenDoesNotNeedStretching()) {
+			Visual v = this.collector.getVisual(lm.getFxInput());
+			return matrixData.getScreenBufferForDevice(v, map);
+		} else {
+			Visual v = this.collector.getVisual(lm.getFxInput());
+			return matrixData.getScreenBufferForDevice(v, lm, map);
+		}
+
 	}
 
-	/**
-	 * switch currentBufferMap <-> preparedBufferMap instances
-	 */
-	public void switchBuffers() {
-		if (switchBuffer==0) {
-			switchBuffer = totalNrOfOutputBuffers;
-		} else {
-			switchBuffer = 0;
-		}
-	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

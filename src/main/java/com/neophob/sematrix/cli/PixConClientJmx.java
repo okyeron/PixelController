@@ -33,7 +33,6 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import com.neophob.sematrix.jmx.PixelControllerStatus;
 import com.neophob.sematrix.jmx.PixelControllerStatusMBean;
 import com.neophob.sematrix.jmx.TimeMeasureItemGlobal;
-import com.neophob.sematrix.jmx.TimeMeasureItemOutput;
 
 /**
  * JMX Helper
@@ -118,16 +117,6 @@ public final class PixConClientJmx {
 					mbeanProxy.getAverageTime(valueEnum)
 			);
 		}
-		
-		// print output specific timing information
-		for (int output = 0; output < mbeanProxy.getNumberOfOutputs(); output++) {
-			System.out.println("\nOuput-specific average times for output #" + (output+1) + ": " + mbeanProxy.getOutputType(output).getReadableName());
-			for (TimeMeasureItemOutput outputValueEnum : TimeMeasureItemOutput.values()) {
-				System.out.printf("   %-22s: %3.3fms\n",
-						outputValueEnum.getReadableName(),
-						mbeanProxy.getOutputAverageTime(output, outputValueEnum)
-				);
-			}
-		}
+
 	}
 }

@@ -30,7 +30,8 @@ PixelController supports different (LED) matrix hardware devices:
 * Seeedstudios Rainbowduino (see Readme.rainbowduino), Hint: the new **v3 models** are currently NOT supported!
 * ArtNet Devices, multiple universe are supported,510 Channels (170 RGB Pixels) per universe
 * MiniDmx Devices (like the SEDU board of http://www.led-studien.de)
-* Adavision (http://www.ladyada.net/make/adavision/)
+* Adavision (http://www.adafruit.com/products/611)
+* Element Labs Stealth LED panel. No longer in production (http://cled.barcousa.com/support/STEALTH/STEALTH_Users_Guide.pdf)
 
 
 ## FRONTENDS
@@ -117,4 +118,5 @@ Example how to use PixConCli:
 * **Scott Wilson**:       Arduino/Rainbowduino Howto
 * **Noxx6**:              Bugfixes
 * **Psykon**:             Example Visuals
+* **okyeron**:            Stealth output device
 

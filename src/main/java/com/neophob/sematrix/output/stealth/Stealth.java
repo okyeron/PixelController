@@ -352,7 +352,7 @@ public class Stealth {
 		
 		if (lastDataMap.get(ofs).equals(s)) {
 			//last frame was equal current frame, do not send it!
-			//log.log(Level.INFO, "do not send frame to {0}", addr);
+		//	LOG.log(Level.INFO, "do not send frame to {0}", ofs);
 			return false;
 		}
 		//update new hash
@@ -370,6 +370,7 @@ public class Stealth {
 	 */
 	public boolean sendFrame(byte ofs, byte data[]) throws IllegalArgumentException {		
 		//LOG.log(Level.INFO,	"data length: "+data.length);
+		//LOG.log(Level.INFO,	"ofs: "+ofs);
 		if (data.length!=(8*DATABUFFERSIZE)) {
 			throw new IllegalArgumentException("data length must be 768 bytes! ");
 		}
@@ -378,16 +379,18 @@ public class Stealth {
  		if (connectionErrorCounter>) {
 			return false;
 		}*/
+		// position multiplier for multiple panels
+		byte posMult = (byte)(ofs * 7);
 
-		byte ofsOne = (byte)(ofs*2);
-		byte ofsTwo = (byte)(ofsOne+1);
-		byte ofsThree = (byte)(ofsTwo+1);
-		byte ofsFour = (byte)(ofsThree+1);
-		byte ofsFive = (byte)(ofsFour+1);
-		byte ofsSix = (byte)(ofsFive+1);
-		byte ofsSeven = (byte)(ofsSix+1);
-		byte ofsEight = (byte)(ofsSeven+1);
-//		byte ofsNine = (byte)(ofsEight+1);
+		byte ofsOne = (byte)(ofs+posMult);
+		byte ofsTwo = (byte)(ofs+1+posMult);
+		byte ofsThree = (byte)(ofs+2+posMult);
+		byte ofsFour = (byte)(ofs+3+posMult);
+		byte ofsFive = (byte)(ofs+4+posMult);
+		byte ofsSix = (byte)(ofs+5+posMult);
+		byte ofsSeven = (byte)(ofs+6+posMult);
+		byte ofsEight = (byte)(ofs+7+posMult);
+
 		byte frameOne[] = new byte[DATABUFFERSIZE];
 		byte frameTwo[] = new byte[DATABUFFERSIZE];
 		byte frameThree[] = new byte[DATABUFFERSIZE];
@@ -396,7 +399,6 @@ public class Stealth {
 		byte frameSix[] = new byte[DATABUFFERSIZE];
 		byte frameSeven[] = new byte[DATABUFFERSIZE];
 		byte frameEight[] = new byte[DATABUFFERSIZE];
-//		byte frameNine[] = new byte[DATABUFFERSIZE];
 		boolean returnValue = false;
 		
 		System.arraycopy(data, 0, frameOne, 0, DATABUFFERSIZE);
@@ -407,13 +409,15 @@ public class Stealth {
 		System.arraycopy(data, DATABUFFERSIZE*5, frameSix, 0, DATABUFFERSIZE);
 		System.arraycopy(data, DATABUFFERSIZE*6, frameSeven, 0, DATABUFFERSIZE);
 		System.arraycopy(data, DATABUFFERSIZE*7, frameEight, 0, DATABUFFERSIZE);
-//		System.arraycopy(data, DATABUFFERSIZE*8, frameNine, 0, DATABUFFERSIZE);
 
 		byte sendlen = DATABUFFERSIZE;
 		byte cmdfull[] = new byte[sendlen+7];
+
+//		LOG.log(Level.INFO,	"sendlen: "+sendlen);
+
 		
 		cmdfull[0] = START_OF_CMD;
-		//cmdfull[1] = ofs;
+//		cmdfull[1] = ofs;
 		cmdfull[2] = (byte)sendlen;
 		cmdfull[3] = CMD_SENDFRAME;
 		cmdfull[4] = START_OF_DATA;		
@@ -425,8 +429,9 @@ public class Stealth {
 		//send frame one
 		if (didFrameChange(ofsOne, frameOne)) {
 			cmdfull[1] = ofsOne;
-			//this is needed due the hardware-wirings 
-			flipSecondScanline(cmdfull, frameOne);
+			// old way - if we needed to flip the second line of leds
+			//flipSecondScanline(cmdfull, frameEight);
+			System.arraycopy(frameOne, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -437,7 +442,7 @@ public class Stealth {
 		//send frame two
 		if (didFrameChange(ofsTwo, frameTwo)) {
 			cmdfull[1] = ofsTwo;
-			flipSecondScanline(cmdfull, frameTwo);
+			System.arraycopy(frameTwo, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -447,7 +452,7 @@ public class Stealth {
 		//send frame three
 		if (didFrameChange(ofsThree, frameThree)) {
 			cmdfull[1] = ofsThree;
-			flipSecondScanline(cmdfull, frameThree);
+			System.arraycopy(frameThree, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -457,7 +462,7 @@ public class Stealth {
 		//send frame four
 		if (didFrameChange(ofsFour, frameFour)) {
 			cmdfull[1] = ofsFour;
-			flipSecondScanline(cmdfull, frameFour);
+			System.arraycopy(frameFour, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -467,7 +472,7 @@ public class Stealth {
 		//send frame Five
 		if (didFrameChange(ofsFive, frameFive)) {
 			cmdfull[1] = ofsFive;
-			flipSecondScanline(cmdfull, frameFive);
+			System.arraycopy(frameFive, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -478,7 +483,7 @@ public class Stealth {
 		//send frame Six
 		if (didFrameChange(ofsSix, frameSix)) {
 			cmdfull[1] = ofsSix;
-			flipSecondScanline(cmdfull, frameSix);
+			System.arraycopy(frameSix, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -489,7 +494,7 @@ public class Stealth {
 		//send frame Seven
 		if (didFrameChange(ofsSeven, frameSeven)) {
 			cmdfull[1] = ofsSeven;
-			flipSecondScanline(cmdfull, frameSeven);
+			System.arraycopy(frameSeven, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -500,7 +505,7 @@ public class Stealth {
 		//send frame Eight
 		if (didFrameChange(ofsEight, frameEight)) {
 			cmdfull[1] = ofsEight;
-			flipSecondScanline(cmdfull, frameEight);
+			System.arraycopy(frameEight, 0, cmdfull, 5, DATABUFFERSIZE);
 			if (sendSerialData(cmdfull)) {
 				returnValue=true;
 			} else {
@@ -508,17 +513,6 @@ public class Stealth {
 			}
 		}
 
-/*		//send frame Nine
-		if (didFrameChange(ofsNine, frameNine)) {
-			cmdfull[1] = ofsNine;
-			flipSecondScanline(cmdfull, frameNine);
-			if (sendSerialData(cmdfull)) {
-				returnValue=true;
-			} else {
-				lastDataMap.put(ofsNine, "");
-			}
-		}
-*/
 		/**/
 		return returnValue;
 	}
@@ -531,6 +525,11 @@ public class Stealth {
 	 * @param frameData the frame data
 	 */
 	private static void flipSecondScanline(byte cmdfull[], byte frameData[]) {
+			/*
+			// another way to do this
+			System.arraycopy(frameData, 0, cmdfull, 5, DATABUFFERSIZE);
+			*/
+// update to not flip
 		for (int i=0; i<16; i++) {
 			cmdfull[   5+i] = frameData[i];
 			cmdfull[16+5+i] = frameData[i+16];
@@ -538,9 +537,8 @@ public class Stealth {
 			cmdfull[48+5+i] = frameData[i+48];
 			cmdfull[64+5+i] = frameData[i+64];
 			cmdfull[80+5+i] = frameData[i+80];
-			
 		}
-
+// original flip scanline code
 /*		int toggler=14;
 		for (int i=0; i<16; i++) {
 			cmdfull[   5+i] = frameData[i];
@@ -633,7 +631,7 @@ public class Stealth {
 			throw new SerialPortException("port is not ready!");
 		}
 		
-		//log.log(Level.INFO, "Serial Wire Size: {0}", cmdfull.length);
+//		LOG.log(Level.INFO, "Serial Wire Size: {0}", cmdfull.length);
 
 		try {
 			port.output.write(cmdfull);
@@ -656,7 +654,7 @@ public class Stealth {
 		//TODO some more tuning is needed here.
 		long start = System.currentTimeMillis();
 		int timeout=8; //wait up to 50ms
-		//log.log(Level.INFO, "wait for ack");
+		//LOG.log(Level.INFO, "wait for ack");
 		while (timeout > 0 && port.available() < 2) {
 			sleep(4); //in ms
 			timeout--;
@@ -669,8 +667,8 @@ public class Stealth {
 		}
 		//TODO: next method is not very speed/memory efficient!
 		byte[] msg = port.readBytes();
-/*		log.log(Level.INFO, "got ACK! data length: {0}", msg.length);
-		for (byte b:msg)
+//		LOG.log(Level.INFO, "got ACK! data length: {0}", msg.length);
+/*		for (byte b:msg)
 			System.out.print(Integer.toHexString(b)+' ');
 		System.out.println();
 */		//INFO: MEEE [0, 0, 65, 67, 75, 0, 0]
